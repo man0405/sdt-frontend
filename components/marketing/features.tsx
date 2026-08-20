@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Lock,
   MessageSquare,
-  Workflow,
   ArrowUpRight,
 } from "lucide-react";
 

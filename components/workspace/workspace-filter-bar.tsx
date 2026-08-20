@@ -4,11 +4,13 @@ import { Search, LayoutGrid, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import type { ProjectView } from "./project";
+
 interface WorkspaceFilterBarProps {
   search: string;
   onSearchChange: (value: string) => void;
-  view: "grid" | "list";
-  onViewChange: (view: "grid" | "list") => void;
+  view: ProjectView;
+  onViewChange: (view: ProjectView) => void;
 }
 
 export function WorkspaceFilterBar({
@@ -34,6 +36,7 @@ export function WorkspaceFilterBar({
           variant={view === "grid" ? "secondary" : "ghost"}
           size="icon"
           className="size-7"
+          aria-label="Grid view"
           onClick={() => onViewChange("grid")}
         >
           <LayoutGrid className="size-4" />
@@ -42,6 +45,7 @@ export function WorkspaceFilterBar({
           variant={view === "list" ? "secondary" : "ghost"}
           size="icon"
           className="size-7"
+          aria-label="List view"
           onClick={() => onViewChange("list")}
         >
           <List className="size-4" />

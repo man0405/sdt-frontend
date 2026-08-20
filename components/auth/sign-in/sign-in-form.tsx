@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const signInSchema = z.object({
-  email: z.string().email("Please enter a valid email address."),
+  username: z.string().trim().min(1, "Please enter your username."),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters."),
@@ -42,7 +42,7 @@ export function SignInForm({
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
       remember: false,
     },
@@ -59,22 +59,21 @@ export function SignInForm({
       onSubmit={handleSubmit(submitHandler)}
       className="space-y-6"
     >
-      {/* Email */}
+      {/* Username */}
       <div className="space-y-2">
-        <Label htmlFor="email">Email address</Label>
+        <Label htmlFor="username">Username</Label>
 
         <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          placeholder="name@example.com"
+          id="username"
+          autoComplete="username"
+          placeholder="Enter your username"
           disabled={isLoading}
-          {...register("email")}
+          {...register("username")}
         />
 
-        {errors.email && (
+        {errors.username && (
           <p className="text-sm text-destructive">
-            {errors.email.message}
+            {errors.username.message}
           </p>
         )}
       </div>

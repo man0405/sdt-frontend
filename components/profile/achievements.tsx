@@ -1,12 +1,4 @@
-import {
-  Award,
-  Bot,
-  Crown,
-  FileText,
-  Rocket,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { Award } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {

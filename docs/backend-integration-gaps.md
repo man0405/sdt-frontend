@@ -75,8 +75,10 @@ Backend statuses are rendered directly:
 
 `RESOLVED` is not rendered as “Đã phản hồi” because the API does not establish that a citizen response was sent.
 
-## Not wired in this scope
+## Feedback operations now wired
 
-The backend supports feedback detail/update/delete, manual ingestion, and category management, but the current frontend has no specified UI flow for those operations. They were not invented during list/dashboard integration.
+The feedback screen now integrates list/filter/pagination, detail, update, delete, manual ingestion, category lookup, and CSV export. Detail opens from the table action. Updates send only changed fields, and deletion requires browser confirmation.
 
-Auth, profile, workspace, settings, notification, security, integration, branding, billing, and onboarding screens are template-only or simulated UI. The documented backend has no APIs for them, so they remain outside this integration scope.
+## Still not wired
+
+Auth, profile, workspace, settings, notification, security, integration, branding, billing, and onboarding screens are template-only or simulated UI. The documented backend has no APIs for them, so they remain outside this integration scope. In particular, the frontend must not invent authentication endpoints or attach bearer tokens until the backend exposes an authentication contract.

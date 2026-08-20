@@ -1,10 +1,4 @@
-import {
-  KeyRound,
-  Lock,
-  ShieldCheck,
-  Smartphone,
-  ChevronRight,
-} from "lucide-react";
+import { ShieldCheck, ChevronRight } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

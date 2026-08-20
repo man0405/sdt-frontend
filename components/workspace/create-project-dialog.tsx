@@ -17,13 +17,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+import type { ProjectDraft } from "./project";
+
 const colorOptions = [
   "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b",
   "#10b981", "#3b82f6", "#ef4444", "#14b8a6",
 ];
 
 interface CreateProjectDialogProps {
-  onCreate?: (data: { name: string; description: string; color: string }) => void;
+  onCreate?: (data: ProjectDraft) => void;
 }
 
 export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps) {
@@ -66,6 +68,9 @@ export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps) {
                 {colorOptions.map((c) => (
                   <button
                     key={c}
+                    type="button"
+                    aria-label={`Select ${c} project color`}
+                    aria-pressed={color === c}
                     onClick={() => setColor(c)}
                     className={`h-8 w-8 rounded-lg transition-transform ${
                       color === c ? "scale-90 ring-2 ring-offset-2 ring-foreground" : ""

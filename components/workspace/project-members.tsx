@@ -13,14 +13,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-interface Member {
-  id: string;
-  name: string;
-  avatar?: string;
-}
+import type { ProjectMember } from "./project";
 
 interface ProjectMembersProps {
-  members: Member[];
+  members: ProjectMember[];
   max?: number;
 }
 

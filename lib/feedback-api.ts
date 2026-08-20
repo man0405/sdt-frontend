@@ -1,4 +1,8 @@
+import axios from "axios";
+
 export type SourceType = "ZALO" | "WEBSITE" | "EMAIL" | "MANUAL" | "OTHER";
+export type RawProcessingStatus = "NEW" | "PROCESSING" | "PROCESSED" | "FAILED";
+export type AnalysisStatus = "PENDING" | "SUCCESS" | "FAILED";
 export type FeedbackStatus =
   | "PENDING_ANALYSIS"
   | "ANALYZED"
@@ -17,6 +21,21 @@ export type ErrorResponse = {
   path: string;
   validationErrors: Record<string, string> | null;
 };
+
+export type AuthenticatedUser = {
+  id: string;
+  username: string;
+  role: "USER" | "ADMIN";
+};
+
+export type LoginResponse = {
+  accessToken: string;
+  tokenType: "Bearer";
+  expiresIn: number;
+  user: AuthenticatedUser;
+};
+
+export const AUTH_STORAGE_KEY = "sdt.auth.session";
 
 export class ApiError extends Error {
   constructor(
@@ -54,6 +73,122 @@ export type FeedbackListItem = {
   priority: PriorityLevel | null;
   priorityScore: number | null;
   createdAt: string;
+};
+
+export type RawFeedback = {
+  id: string;
+  source: SourceType;
+  sourceRef: string;
+  rawTitle: string | null;
+  rawContent: string;
+  rawAuthorName: string | null;
+  rawAuthorContact: string | null;
+  rawLocation: string | null;
+  categoryHint: string | null;
+  rawMetadata: Record<string, unknown> | null;
+  receivedAt: string;
+  processingStatus: RawProcessingStatus;
+  processedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AnalysisResult = {
+  id: string;
+  sentiment: SentimentType | null;
+  sentimentScore: number | null;
+  category: string | null;
+  categoryScore: number | null;
+  matchedKeywords: string[] | null;
+  priority: PriorityLevel | null;
+  priorityScore: number | null;
+  priorityReason: string | null;
+  modelName: string | null;
+  modelVersion: string | null;
+  analysisStatus: AnalysisStatus;
+  errorMessage: string | null;
+  analyzedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FeedbackDetail = {
+  id: string;
+  title: string;
+  content: string;
+  authorName: string | null;
+  authorContact: string | null;
+  location: string | null;
+  category: string | null;
+  status: FeedbackStatus;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+  rawFeedback: RawFeedback;
+  latestAnalysis: AnalysisResult | null;
+  analysisHistory: AnalysisResult[];
+};
+
+export type FeedbackUpdateRequest = {
+  title?: string;
+  content?: string;
+  authorName?: string;
+  authorContact?: string;
+  location?: string;
+  category?: string;
+  status?: FeedbackStatus;
+};
+
+export type FeedbackCreateRequest = {
+  title?: string;
+  content: string;
+  authorName?: string;
+  authorContact?: string;
+  location?: string;
+  receivedAt?: string;
+};
+
+export type FeedbackCreateResponse = {
+  id: string;
+  title: string | null;
+  content: string;
+  category: string | null;
+  status: FeedbackStatus;
+  source: SourceType;
+  receivedAt: string;
+  createdAt: string;
+};
+
+export type FeedbackIngestRequest = {
+  source: SourceType;
+  sourceRef: string;
+  rawTitle?: string;
+  rawContent: string;
+  rawAuthorName?: string;
+  rawAuthorContact?: string;
+  rawLocation?: string;
+  categoryHint?: string;
+  rawMetadata?: Record<string, unknown>;
+  receivedAt: string;
+};
+
+export type FeedbackIngestResponse = {
+  id: string;
+  source: SourceType;
+  sourceRef: string;
+  processingStatus: RawProcessingStatus;
+  receivedAt: string;
+  createdAt: string;
+};
+
+export type FeedbackAttachment = {
+  id: string;
+  feedbackId: string;
+  originalFilename: string;
+  contentType: "image/jpeg" | "image/png" | "image/webp";
+  fileSize: number;
+  createdAt: string;
+  downloadUrl: string;
 };
 
 export type Category = {
@@ -113,6 +248,43 @@ export type FeedbackFilters = {
 
 const apiBaseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "");
 
+function canUseStorage() {
+  return typeof window !== "undefined";
+}
+
+export function getAccessToken() {
+  if (!canUseStorage()) return null;
+
+  const session = window.localStorage.getItem(AUTH_STORAGE_KEY) ?? window.sessionStorage.getItem(AUTH_STORAGE_KEY);
+  if (!session) return null;
+
+  try {
+    const parsed = JSON.parse(session) as LoginResponse;
+    return parsed.accessToken || null;
+  } catch {
+    clearSession();
+    return null;
+  }
+}
+
+export function saveSession(session: LoginResponse, remember: boolean) {
+  if (!canUseStorage()) return;
+  clearSession();
+  const storage = remember ? window.localStorage : window.sessionStorage;
+  storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+}
+
+export function clearSession() {
+  if (!canUseStorage()) return;
+  window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+function authorizationHeader() {
+  const token = getAccessToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 function apiUrl(path: string, query?: Record<string, string | number | undefined>) {
   const url = apiBaseUrl ? new URL(path, `${apiBaseUrl}/`) : new URL(path, window.location.origin);
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -121,37 +293,196 @@ function apiUrl(path: string, query?: Record<string, string | number | undefined
   return url.toString();
 }
 
-async function request<T>(path: string, init: RequestInit = {}, query?: Record<string, string | number | undefined>): Promise<T> {
-  const response = await fetch(apiUrl(path, query), { ...init, headers: { Accept: "application/json", ...init.headers } });
-  if (response.ok) return response.json() as Promise<T>;
+function isErrorResponse(data: unknown): data is ErrorResponse {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "message" in data &&
+    typeof data.message === "string"
+  );
+}
 
-  let details: ErrorResponse | null = null;
-  try {
-    details = (await response.json()) as ErrorResponse;
-  } catch {
-    // The API normally returns JSON errors; retain a usable message if a proxy does not.
+async function errorDetails(data: unknown): Promise<ErrorResponse | null> {
+  if (data instanceof Blob) {
+    try {
+      return errorDetails(JSON.parse(await data.text()));
+    } catch {
+      return null;
+    }
   }
-  throw new ApiError(details?.message ?? `Request failed (${response.status})`, response.status, details);
+
+  return isErrorResponse(data) ? data : null;
+}
+
+async function throwRequestError(error: unknown, fallback: string): Promise<never> {
+  if (
+    axios.isCancel(error) ||
+    (axios.isAxiosError(error) && error.code === "ERR_CANCELED")
+  ) {
+    throw new DOMException("The operation was aborted.", "AbortError");
+  }
+
+  if (!axios.isAxiosError(error) || !error.response) {
+    throw error;
+  }
+
+  const details = await errorDetails(error.response.data);
+  throw new ApiError(
+    details?.message ?? `${fallback} (${error.response.status})`,
+    error.response.status,
+    details
+  );
+}
+
+async function request<T>(
+  path: string,
+  query?: Record<string, string | number | undefined>,
+  signal?: AbortSignal
+): Promise<T> {
+  try {
+    const response = await axios.get<T>(apiUrl(path, query), {
+      signal,
+      headers: { Accept: "application/json", ...authorizationHeader() },
+    });
+
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Request failed");
+  }
+}
+
+export async function login(username: string, password: string) {
+  try {
+    const response = await axios.post<LoginResponse>(apiUrl("/api/auth/login"), { username, password }, {
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+    });
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Sign in failed");
+  }
+}
+
+export function getCurrentUser(signal?: AbortSignal) {
+  return request<AuthenticatedUser>("/api/auth/me", undefined, signal);
 }
 
 export function getFeedback(filters: FeedbackFilters, signal?: AbortSignal) {
-  return request<PageResponse<FeedbackListItem>>("/api/feedback", { signal }, filters);
+  return request<PageResponse<FeedbackListItem>>("/api/feedback", filters, signal);
+}
+
+export function getFeedbackDetail(id: string, signal?: AbortSignal) {
+  return request<FeedbackDetail>(`/api/feedback/${encodeURIComponent(id)}`, undefined, signal);
+}
+
+export async function createFeedback(payload: FeedbackCreateRequest) {
+  try {
+    const response = await axios.post<FeedbackCreateResponse>(apiUrl("/api/feedback"), payload, {
+      headers: { Accept: "application/json", "Content-Type": "application/json", ...authorizationHeader() },
+    });
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Feedback submission failed");
+  }
+}
+
+export async function updateFeedback(id: string, payload: FeedbackUpdateRequest) {
+  try {
+    const response = await axios.patch<FeedbackDetail>(
+      apiUrl(`/api/feedback/${encodeURIComponent(id)}`),
+      payload,
+      { headers: { Accept: "application/json", "Content-Type": "application/json", ...authorizationHeader() } }
+    );
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Feedback update failed");
+  }
+}
+
+export async function deleteFeedback(id: string) {
+  try {
+    await axios.delete(apiUrl(`/api/feedback/${encodeURIComponent(id)}`), {
+      headers: { Accept: "application/json", ...authorizationHeader() },
+    });
+  } catch (error) {
+    return throwRequestError(error, "Feedback deletion failed");
+  }
+}
+
+export async function ingestFeedback(payload: FeedbackIngestRequest) {
+  try {
+    const response = await axios.post<FeedbackIngestResponse>(apiUrl("/api/feedback/ingest"), payload, {
+      headers: { Accept: "application/json", "Content-Type": "application/json", ...authorizationHeader() },
+    });
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Feedback submission failed");
+  }
+}
+
+export function getFeedbackAttachments(feedbackId: string, signal?: AbortSignal) {
+  return request<FeedbackAttachment[]>(
+    `/api/feedback/${encodeURIComponent(feedbackId)}/attachments`,
+    undefined,
+    signal
+  );
+}
+
+export async function uploadFeedbackAttachment(feedbackId: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await axios.post<FeedbackAttachment>(
+      apiUrl(`/api/feedback/${encodeURIComponent(feedbackId)}/attachments`),
+      formData,
+      { headers: { Accept: "application/json", ...authorizationHeader() } }
+    );
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Image upload failed");
+  }
+}
+
+export async function downloadFeedbackAttachment(feedbackId: string, attachmentId: string) {
+  try {
+    const response = await axios.get<Blob>(
+      apiUrl(`/api/feedback/${encodeURIComponent(feedbackId)}/attachments/${encodeURIComponent(attachmentId)}/download`),
+      { responseType: "blob", headers: { Accept: "image/*", ...authorizationHeader() } }
+    );
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Image download failed");
+  }
+}
+
+export async function deleteFeedbackAttachment(feedbackId: string, attachmentId: string) {
+  try {
+    await axios.delete(
+      apiUrl(`/api/feedback/${encodeURIComponent(feedbackId)}/attachments/${encodeURIComponent(attachmentId)}`),
+      { headers: { Accept: "application/json", ...authorizationHeader() } }
+    );
+  } catch (error) {
+    return throwRequestError(error, "Image deletion failed");
+  }
 }
 
 export function getActiveCategories(signal?: AbortSignal) {
-  return request<Category[]>("/api/categories", { signal }, { activeOnly: "true" });
+  return request<Category[]>("/api/categories", { activeOnly: "true" }, signal);
 }
 
 export function getDashboardStats(signal?: AbortSignal) {
-  return request<DashboardStats>("/api/dashboard/stats", { signal });
+  return request<DashboardStats>("/api/dashboard/stats", undefined, signal);
 }
 
 export function getDashboardDistribution(signal?: AbortSignal) {
-  return request<DashboardDistribution>("/api/dashboard/distribution", { signal });
+  return request<DashboardDistribution>("/api/dashboard/distribution", undefined, signal);
 }
 
-export function getDashboardTrend(filters: Pick<DashboardTrend, "fromDate" | "toDate" | "interval">, signal?: AbortSignal) {
-  return request<DashboardTrend>("/api/dashboard/trend", { signal }, filters);
+export function getDashboardTrend(
+  filters: Pick<DashboardTrend, "fromDate" | "toDate" | "interval">,
+  signal?: AbortSignal
+) {
+  return request<DashboardTrend>("/api/dashboard/trend", filters, signal);
 }
 
 export async function exportFeedback(filters: FeedbackFilters) {
@@ -160,19 +491,22 @@ export async function exportFeedback(filters: FeedbackFilters) {
   void size;
   void sortBy;
   void sortDirection;
-  const response = await fetch(apiUrl("/api/export", exportFilters), { headers: { Accept: "text/csv" } });
-  if (!response.ok) {
-    let details: ErrorResponse | null = null;
-    try {
-      details = (await response.json()) as ErrorResponse;
-    } catch {
-      // See request() above.
-    }
-    throw new ApiError(details?.message ?? `Export failed (${response.status})`, response.status, details);
-  }
 
-  const filename = response.headers.get("Content-Disposition")?.match(/filename="?([^";]+)"?/)?.[1] ?? "feedback-export.csv";
-  return { blob: await response.blob(), filename };
+  try {
+    const response = await axios.get<Blob>(apiUrl("/api/export", exportFilters), {
+      responseType: "blob",
+      headers: { Accept: "text/csv", ...authorizationHeader() },
+    });
+    const contentDisposition = response.headers["content-disposition"];
+    const filename =
+      (typeof contentDisposition === "string"
+        ? contentDisposition.match(/filename="?([^";]+)"?/)?.[1]
+        : undefined) ?? "feedback-export.csv";
+
+    return { blob: response.data, filename };
+  } catch (error) {
+    return throwRequestError(error, "Export failed");
+  }
 }
 
 export const sourceLabels: Record<SourceType, string> = {

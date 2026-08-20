@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, ArrowLeft, SearchX } from "lucide-react";
+import { Home, SearchX } from "lucide-react";
 import { BackButton } from "@/components/shared/back-button";
 
 import { Button } from "@/components/ui/button";

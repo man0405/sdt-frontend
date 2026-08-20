@@ -1,51 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { AuthCard } from "@/components/auth/shared/auth-card";
 import { AuthFooter } from "@/components/auth/shared/auth-footer";
 import { AuthLogo } from "@/components/auth/shared/auth-logo";
-import { AuthDivider } from "@/components/auth/sign-in/auth-divider";
 import { SignInForm, SignInValues } from "@/components/auth/sign-in/sign-in-form";
-import { SocialLogin } from "@/components/auth/sign-in/social-login";
+import { ApiError, login, saveSession } from "@/lib/feedback-api";
 
 export default function SignInPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<
-    "google" | "github" | null
-  >(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSignIn(values: SignInValues) {
     try {
       setLoading(true);
-
-      console.log("Sign In", values);
-
-      // TODO:
-      // Clerk
-      // Supabase
-      // Firebase
-      // Auth.js
-
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setError(null);
+      const session = await login(values.username, values.password);
+      saveSession(session, values.remember);
+      router.replace("/dashboard");
+    } catch (requestError) {
+      setError(requestError instanceof ApiError ? requestError.message : "Unable to sign in. Please try again.");
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleSocialLogin(provider: "google" | "github") {
-    try {
-      setSocialLoading(provider);
-
-      console.log(provider);
-
-      // TODO:
-      // OAuth login
-
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-    } finally {
-      setSocialLoading(null);
     }
   }
 
@@ -58,17 +38,12 @@ export default function SignInPage() {
           <div className="space-y-6">
 
 
-            <SocialLogin
-              loading={socialLoading}
-              onProviderClick={handleSocialLogin}
-            />
-
-            <AuthDivider />
-
             <SignInForm
               isLoading={loading}
               onSubmit={handleSignIn}
             />
+
+            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
             <AuthFooter
               text="Don't have an account?"

@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AuthSuccessCard } from "@/components/auth/shared/auth-success-card";
-
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { AuthCard } from "@/components/auth/shared/auth-card";
 import { AuthLogo } from "@/components/auth/shared/auth-logo";
@@ -12,7 +10,6 @@ import { VerificationCard } from "@/components/auth/verify-email/verification-ca
 const RESEND_DELAY = 60;
 
 export default function VerifyEmailPage() {
-    const [verified, setVerified] = useState(false);
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
@@ -61,22 +58,13 @@ export default function VerifyEmailPage() {
                 <AuthLogo />
 
                 <AuthCard className="p-8">
-                    {verified ? (
-                        <AuthSuccessCard
-                            title="Email Verified"
-                            description="Your email has been verified successfully. You can now continue to your workspace."
-                            primaryLabel="Continue"
-                            primaryHref="/dashboard"
-                        />
-                    ) : (
-                        <VerificationCard
-                            email={email}
-                            countdown={countdown}
-                            isLoading={loading}
-                            onResend={handleResend}
-                            onChangeEmail={handleChangeEmail}
-                        />
-                    )}
+                    <VerificationCard
+                        email={email}
+                        countdown={countdown}
+                        isLoading={loading}
+                        onResend={handleResend}
+                        onChangeEmail={handleChangeEmail}
+                    />
                 </AuthCard>
             </div>
         </AuthLayout>

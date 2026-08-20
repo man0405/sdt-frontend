@@ -14,12 +14,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProjectMembers } from "@/components/workspace/project-members";
+import type { ProjectMember } from "@/components/workspace/project";
 
 interface ProjectHeaderProps {
   name: string;
   description: string;
   color: string;
-  members: { id: string; name: string; avatar?: string }[];
+  members: ProjectMember[];
   onEdit?: () => void;
   onArchive?: () => void;
   onDelete?: () => void;
@@ -39,6 +40,7 @@ export function ProjectHeader({
   return (
     <div className="flex flex-col gap-4">
       <button
+        type="button"
         onClick={() => router.push("/workspace")}
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
       >
@@ -117,7 +119,7 @@ export function ProjectHeader({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Project actions">
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>

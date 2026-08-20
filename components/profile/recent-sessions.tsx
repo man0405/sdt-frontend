@@ -1,11 +1,4 @@
-import {
-  Monitor,
-  Smartphone,
-  Globe,
-  MapPin,
-  ShieldCheck,
-  LogOut,
-} from "lucide-react";
+import { Globe, MapPin, ShieldCheck, LogOut } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

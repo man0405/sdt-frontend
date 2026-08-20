@@ -2,8 +2,7 @@ import { NavItem } from "@/types/navigation";
 import {
   LayoutDashboard,
   MessagesSquare,
-  Settings,
-  UserRoundPen
+  Settings
 } from "lucide-react";
 
 export const navigation: NavItem[] = [
@@ -22,11 +21,11 @@ export const navigation: NavItem[] = [
     href: "/settings",
     icon: Settings,
   },
-  {
-    title: "Tài khoản",
-    href: "/profile",
-    icon: UserRoundPen,
-  },
+  // {
+  //   title: "Tài khoản",
+  //   href: "/profile",
+  //   icon: UserRoundPen,
+  // },
   // {
   // title: "Pages",
   // href: "/pages",

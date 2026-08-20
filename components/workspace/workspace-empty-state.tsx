@@ -1,8 +1,10 @@
 import { FolderKanban } from "lucide-react";
+
 import { CreateProjectDialog } from "./create-project-dialog";
+import type { ProjectDraft } from "./project";
 
 interface WorkspaceEmptyStateProps {
-  onCreate?: (data: { name: string; description: string; color: string }) => void;
+  onCreate?: (data: ProjectDraft) => void;
 }
 
 export function WorkspaceEmptyState({ onCreate }: WorkspaceEmptyStateProps) {

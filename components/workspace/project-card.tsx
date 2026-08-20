@@ -12,19 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import type { Project } from "./project";
 import { ProjectMembers } from "./project-members";
-
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  chatCount: number;
-  agentCount: number;
-  fileCount: number;
-  members: { id: string; name: string; avatar?: string }[];
-  updatedAt: string;
-}
 
 interface ProjectCardProps {
   project: Project;
@@ -68,6 +57,7 @@ export function ProjectCard({
               variant="ghost"
               size="icon"
               className="size-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+              aria-label="Project actions"
             >
               <MoreHorizontal className="size-4" />
             </Button>
