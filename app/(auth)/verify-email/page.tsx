@@ -15,8 +15,8 @@ export default function VerifyEmailPage() {
     const [loading, setLoading] = useState(false);
     const [countdown, setCountdown] = useState(RESEND_DELAY);
 
-    // Demo email
-    const email = "virendra@example.com";
+    // Placeholder until the registration API returns the verified email address.
+    const email = "an@example.com";
 
     useEffect(() => {
         if (countdown <= 0) return;
@@ -32,7 +32,7 @@ export default function VerifyEmailPage() {
         try {
             setLoading(true);
 
-            console.log("Resend verification email");
+            console.log("Gửi lại email xác minh");
 
             // TODO:
             // Clerk

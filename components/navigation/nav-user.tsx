@@ -73,6 +73,7 @@ export function NavUser({
   }, []);
 
   const plan = user.plan ?? "Free";
+  const planLabels = { Free: "Miễn phí", Pro: "Chuyên nghiệp", Team: "Nhóm" };
 
   // Use resolvedTheme for the icon (handles "system" correctly),
   // but `theme` for the radio group's actual selected value.
@@ -135,7 +136,7 @@ export function NavUser({
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">
-                  {plan}
+                  {planLabels[plan]}
                 </Badge>
               </div>
             </DropdownMenuLabel>
@@ -147,9 +148,9 @@ export function NavUser({
                     <Sparkles />
                   </IconBadge>
                   <div className="flex flex-col leading-tight">
-                    <span className="text-sm font-medium">Upgrade to Pro</span>
+                    <span className="text-sm font-medium">Nâng cấp gói chuyên nghiệp</span>
                     <span className="text-xs text-muted-foreground">
-                      Unlock more AI credits & tools
+                      Mở rộng hạn mức AI và công cụ
                     </span>
                   </div>
                 </DropdownMenuItem>
@@ -162,31 +163,31 @@ export function NavUser({
                 <IconBadge>
                   <BadgeCheckIcon />
                 </IconBadge>
-                Account
+                Tài khoản
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 h-9">
                 <IconBadge>
                   <CreditCardIcon />
                 </IconBadge>
-                Billing
+                Thanh toán
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 h-9">
                 <IconBadge>
                   <KeyRound />
                 </IconBadge>
-                API Keys
+                Khóa API
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 h-9">
                 <IconBadge>
                   <BellIcon />
                 </IconBadge>
-                Notifications
+                Thông báo
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 h-9">
                 <IconBadge>
                   <UserPlus />
                 </IconBadge>
-                Invite team members
+                Mời thành viên
               </DropdownMenuItem>
             </DropdownMenuGroup>
 
@@ -197,7 +198,7 @@ export function NavUser({
                 <IconBadge>
                   <CurrentThemeIcon />
                 </IconBadge>
-                Theme
+                Giao diện
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="p-2 rounded-xl">
                 <DropdownMenuRadioGroup
@@ -206,15 +207,15 @@ export function NavUser({
                 >
                   <DropdownMenuRadioItem value="light" className="gap-2 h-9">
                     <Sun className="!size-4" />
-                    Light
+                    Sáng
                   </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="dark" className="gap-2 h-9">
                     <Moon className="!size-4" />
-                    Dark
+                    Tối
                   </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="system" className="gap-2 h-9">
                     <Monitor className="!size-4" />
-                    System
+                    Theo hệ thống
                   </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuSubContent>
@@ -224,7 +225,7 @@ export function NavUser({
               <IconBadge>
                 <Keyboard />
               </IconBadge>
-              Keyboard shortcuts
+              Phím tắt
               <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
             </DropdownMenuItem>
 
@@ -232,7 +233,7 @@ export function NavUser({
               <IconBadge>
                 <LifeBuoy />
               </IconBadge>
-              Help & support
+              Trợ giúp và hỗ trợ
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="my-2" />
@@ -241,7 +242,7 @@ export function NavUser({
               <IconBadge>
                 <LogOutIcon />
               </IconBadge>
-              Log out
+              Đăng xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

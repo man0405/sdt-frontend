@@ -16,12 +16,12 @@ const resetPasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters."),
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Passwords do not match.",
+    message: "Mật khẩu không khớp.",
   });
 
 export type ResetPasswordValues = z.infer<
@@ -68,7 +68,7 @@ export function ResetPasswordForm({
     >
       <div className="space-y-2">
         <Label htmlFor="password">
-          New Password
+          Mật khẩu mới
         </Label>
 
         <div className="relative">
@@ -76,7 +76,7 @@ export function ResetPasswordForm({
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
-            placeholder="Enter a new password"
+            placeholder="Nhập mật khẩu mới"
             disabled={isLoading}
             {...register("password")}
           />
@@ -87,6 +87,7 @@ export function ResetPasswordForm({
               setShowPassword((prev) => !prev)
             }
             className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -107,7 +108,7 @@ export function ResetPasswordForm({
 
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">
-          Confirm Password
+          Xác nhận mật khẩu
         </Label>
 
         <div className="relative">
@@ -115,7 +116,7 @@ export function ResetPasswordForm({
             id="confirmPassword"
             type={showConfirm ? "text" : "password"}
             autoComplete="new-password"
-            placeholder="Confirm your password"
+            placeholder="Nhập lại mật khẩu"
             disabled={isLoading}
             {...register("confirmPassword")}
           />
@@ -126,6 +127,7 @@ export function ResetPasswordForm({
               setShowConfirm((prev) => !prev)
             }
             className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+            aria-label={showConfirm ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
           >
             {showConfirm ? (
               <EyeOff className="h-4 w-4" />
@@ -152,7 +154,7 @@ export function ResetPasswordForm({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         )}
 
-        Reset Password
+        Đặt lại mật khẩu
       </Button>
     </form>
   );

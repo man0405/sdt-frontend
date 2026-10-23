@@ -1,7 +1,8 @@
 "use client";
 
-import { MessageCircleCheck } from "lucide-react";
 import Link from "next/link";
+
+import { BrandMark } from "@/components/shared/brand-mark";
 
 export default function AppLogo() {
   return (
@@ -14,11 +15,9 @@ export default function AppLogo() {
         group-data-[collapsible=icon]:justify-center
       "
     >
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0f766e] text-white">
-        <MessageCircleCheck className="h-5 w-5" />
-      </div>
+      <BrandMark size="compact" className="transition-transform group-hover:scale-105" />
 
-      <span className="text-xl font-semibold group-data-[collapsible=icon]:hidden">
+      <span className="text-sm font-semibold leading-tight group-data-[collapsible=icon]:hidden">
         SDT
       </span>
     </Link>

@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
     try {
       setLoading(true);
 
-      console.log("Forgot Password", values);
+      console.log("Quên mật khẩu", values);
 
       // TODO:
       // Clerk
@@ -46,21 +46,20 @@ export default function ForgotPasswordPage() {
             <AuthHeader
               title={
                 emailSent
-                  ? "Check your email"
-                  : "Forgot your password?"
+                  ? "Kiểm tra email của bạn"
+                  : "Khôi phục mật khẩu"
               }
               description={
                 emailSent
-                  ? "We've sent a password reset link to your email address. Please check your inbox."
-                  : "Enter your email address and we'll send you a password reset link."
+                  ? "Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu. Vui lòng kiểm tra hộp thư của bạn."
+                  : "Nhập địa chỉ email đã đăng ký để nhận hướng dẫn đặt lại mật khẩu."
               }
             />
 
             {emailSent ? (
               <div className="space-y-4">
                 <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-                  Didn't receive the email? Check your spam folder or request
-                  another password reset link.
+                  Chưa nhận được email? Hãy kiểm tra thư rác, rồi thử gửi lại hướng dẫn.
                 </div>
 
                 <button
@@ -68,7 +67,7 @@ export default function ForgotPasswordPage() {
                   onClick={() => setEmailSent(false)}
                   className="w-full text-sm font-medium text-primary hover:underline"
                 >
-                  Send another reset link
+                  Gửi lại liên kết đặt lại mật khẩu
                 </button>
               </div>
             ) : (
@@ -79,8 +78,8 @@ export default function ForgotPasswordPage() {
             )}
 
             <AuthFooter
-              text="Remember your password?"
-              linkLabel="Sign in"
+              text="Bạn đã nhớ mật khẩu?"
+              linkLabel="Đăng nhập"
               href="/sign-in"
             />
           </div>

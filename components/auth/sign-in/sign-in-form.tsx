@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const signInSchema = z.object({
-  username: z.string().trim().min(1, "Please enter your username."),
+  username: z.string().trim().min(1, "Vui lòng nhập tên đăng nhập."),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters."),
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
   remember: z.boolean(),
 });
 
@@ -61,12 +61,12 @@ export function SignInForm({
     >
       {/* Username */}
       <div className="space-y-2">
-        <Label htmlFor="username">Username</Label>
+        <Label htmlFor="username">Tên đăng nhập</Label>
 
         <Input
           id="username"
           autoComplete="username"
-          placeholder="Enter your username"
+          placeholder="Nhập tên đăng nhập"
           disabled={isLoading}
           {...register("username")}
         />
@@ -80,14 +80,14 @@ export function SignInForm({
 
       {/* Password */}
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Mật khẩu</Label>
 
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
-            placeholder="Enter your password"
+            placeholder="Nhập mật khẩu"
             disabled={isLoading}
             {...register("password")}
           />
@@ -96,6 +96,7 @@ export function SignInForm({
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -127,7 +128,7 @@ export function SignInForm({
             htmlFor="remember"
             className="cursor-pointer font-normal"
           >
-            Remember me
+            Duy trì đăng nhập trên thiết bị này
           </Label>
         </div>
 
@@ -135,7 +136,7 @@ export function SignInForm({
           href="/forgot-password"
           className="text-sm font-medium text-primary hover:underline"
         >
-          Forgot password?
+          Quên mật khẩu?
         </Link>
       </div>
 
@@ -150,7 +151,7 @@ export function SignInForm({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         )}
 
-        Sign in
+        Đăng nhập
       </Button>
     </form>
   );

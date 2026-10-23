@@ -12,17 +12,16 @@ export default function Loading() {
             <Sparkles className="h-9 w-9 animate-pulse text-primary" />
           </div>
 
-          {/* Orbit Ring */}
           <div className="absolute inset-0 animate-spin rounded-full border border-dashed border-primary/20 [animation-duration:8s]" />
         </div>
 
         {/* Title */}
         <h2 className="mt-8 text-2xl font-bold tracking-tight">
-          AI SaaS Starter Kit
+          Bộ khởi tạo ứng dụng AI SaaS
         </h2>
 
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Preparing your workspace...
+          Đang chuẩn bị không gian làm việc...
         </p>
 
         {/* Progress */}
@@ -31,7 +30,7 @@ export default function Loading() {
         </div>
 
         <p className="mt-4 text-xs text-muted-foreground">
-          Loading modules...
+          Đang tải các mô-đun...
         </p>
       </div>
     </div>

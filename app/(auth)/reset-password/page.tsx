@@ -20,7 +20,7 @@ export default function ResetPasswordPage() {
     try {
       setLoading(true);
 
-      console.log("Reset Password", values);
+      console.log("Đặt lại mật khẩu", values);
 
       // TODO:
       // Clerk
@@ -44,16 +44,16 @@ export default function ResetPasswordPage() {
         <AuthCard className="p-8">
   {success ? (
     <AuthSuccessCard
-      title="Password Updated"
-      description="Your password has been reset successfully. You can now sign in using your new password."
-      primaryLabel="Continue to Sign In"
+      title="Đã cập nhật mật khẩu"
+      description="Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập bằng mật khẩu mới."
+      primaryLabel="Tiếp tục đăng nhập"
       primaryHref="/sign-in"
     />
   ) : (
     <div className="space-y-6">
       <AuthHeader
-        title="Reset Password"
-        description="Create a strong password for your account."
+        title="Đặt lại mật khẩu"
+        description="Chọn mật khẩu mới để bảo vệ tài khoản của bạn."
       />
 
       <ResetPasswordForm

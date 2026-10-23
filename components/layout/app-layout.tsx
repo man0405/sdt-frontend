@@ -1,14 +1,14 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 import AppSidebar from "@/components/navigation/app-sidebar";
-import AppHeader from "./app-header";
-import AppFooter from "./app-footer";
 import { getAccessToken } from "@/lib/feedback-api";
+import AppFooter from "./app-footer";
+import AppHeader from "./app-header";
 
 interface AppLayoutProps {
   children: ReactNode;

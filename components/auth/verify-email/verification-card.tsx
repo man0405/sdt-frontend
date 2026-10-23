@@ -32,11 +32,11 @@ export function VerificationCard({
       {/* Content */}
       <div className="space-y-3">
         <h2 className="text-2xl font-bold tracking-tight">
-          Verify your email
+          Xác minh email
         </h2>
 
         <p className="text-sm text-muted-foreground">
-          We've sent a verification link to
+          Chúng tôi đã gửi liên kết xác minh đến địa chỉ
         </p>
 
         {email && (
@@ -46,8 +46,7 @@ export function VerificationCard({
         )}
 
         <p className="text-sm text-muted-foreground">
-          Please check your inbox and click the verification link to activate
-          your account.
+          Mở email và chọn liên kết xác minh để hoàn tất đăng ký tài khoản.
         </p>
       </div>
 
@@ -59,7 +58,7 @@ export function VerificationCard({
           asChild
         >
           <Link href="https://mail.google.com" target="_blank">
-            Open Email App
+            Mở ứng dụng email
           </Link>
         </Button>
 
@@ -72,14 +71,14 @@ export function VerificationCard({
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
+              Đang gửi...
             </>
           ) : (
             <>
               <RefreshCw className="mr-2 h-4 w-4" />
               {countdown > 0
-                ? `Resend in ${countdown}s`
-                : "Resend Email"}
+                ? `Gửi lại sau ${countdown} giây`
+                : "Gửi lại email xác minh"}
             </>
           )}
         </Button>
@@ -89,14 +88,13 @@ export function VerificationCard({
           className="w-full"
           onClick={onChangeEmail}
         >
-          Change Email Address
+          Thay đổi địa chỉ email
         </Button>
       </div>
 
       {/* Footer */}
       <p className="text-xs text-muted-foreground">
-        Didn't receive the email? Check your spam folder or try resending the
-        verification email.
+        Chưa nhận được email? Hãy kiểm tra thư rác hoặc gửi lại email xác minh.
       </p>
     </div>
   );

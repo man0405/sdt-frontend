@@ -6,7 +6,7 @@ interface AuthDividerProps {
 }
 
 export function AuthDivider({
-  label = "or continue with",
+  label = "hoặc tiếp tục với",
   className,
 }: AuthDividerProps) {
   return (

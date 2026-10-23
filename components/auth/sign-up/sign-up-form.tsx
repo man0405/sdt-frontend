@@ -17,25 +17,25 @@ const signUpSchema = z
   .object({
     name: z
       .string()
-      .min(2, "Name must be at least 2 characters."),
+      .min(2, "Tên phải có ít nhất 2 ký tự."),
 
     email: z
       .string()
-      .email("Please enter a valid email address."),
+      .email("Vui lòng nhập địa chỉ email hợp lệ."),
 
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters."),
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
 
     confirmPassword: z.string(),
 
     terms: z.boolean().refine((value) => value === true, {
-      message: "You must accept the Terms of Service.",
+      message: "Bạn phải chấp nhận Điều khoản dịch vụ.",
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Passwords do not match.",
+    message: "Mật khẩu không khớp.",
   });
 
 export type SignUpValues = z.infer<typeof signUpSchema>;
@@ -83,11 +83,11 @@ export function SignUpForm({
     >
       {/* Name */}
       <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
+        <Label htmlFor="name">Họ và tên</Label>
 
         <Input
           id="name"
-          placeholder="John Doe"
+          placeholder="Nguyễn Văn An"
           disabled={isLoading}
           {...register("name")}
         />
@@ -101,12 +101,12 @@ export function SignUpForm({
 
       {/* Email */}
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
+        <Label htmlFor="email">Địa chỉ email</Label>
 
         <Input
           id="email"
           type="email"
-          placeholder="name@example.com"
+          placeholder="an@example.com"
           autoComplete="email"
           disabled={isLoading}
           {...register("email")}
@@ -121,14 +121,14 @@ export function SignUpForm({
 
       {/* Password */}
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Mật khẩu</Label>
 
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
-            placeholder="Create a password"
+            placeholder="Tạo mật khẩu"
             disabled={isLoading}
             {...register("password")}
           />
@@ -137,6 +137,7 @@ export function SignUpForm({
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -158,7 +159,7 @@ export function SignUpForm({
       {/* Confirm Password */}
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">
-          Confirm Password
+          Xác nhận mật khẩu
         </Label>
 
         <div className="relative">
@@ -166,7 +167,7 @@ export function SignUpForm({
             id="confirmPassword"
             type={showConfirm ? "text" : "password"}
             autoComplete="new-password"
-            placeholder="Confirm your password"
+            placeholder="Nhập lại mật khẩu"
             disabled={isLoading}
             {...register("confirmPassword")}
           />
@@ -175,6 +176,7 @@ export function SignUpForm({
             type="button"
             onClick={() => setShowConfirm((prev) => !prev)}
             className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+            aria-label={showConfirm ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
           >
             {showConfirm ? (
               <EyeOff className="h-4 w-4" />
@@ -221,7 +223,7 @@ export function SignUpForm({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         )}
 
-        Create Account
+        Tạo tài khoản
       </Button>
     </form>
   );

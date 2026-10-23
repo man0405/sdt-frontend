@@ -6,12 +6,14 @@ import {
   ChevronRight,
   CircleAlert,
   Download,
+  Eye,
   Filter,
   Globe2,
   ImagePlus,
   Mail,
   MessageCircle,
   Plus,
+  Pencil,
   Search,
   SlidersHorizontal,
   SquarePen,
@@ -48,6 +50,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { startAutoRefresh } from "@/lib/auto-refresh";
 import {
   ApiError,
   createFeedback,
@@ -100,6 +103,7 @@ export default function FeedbackPage() {
   const [exporting, setExporting] = useState(false);
   const [ingestSuccess, setIngestSuccess] = useState<string | null>(null);
   const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null);
+  const [openInEditMode, setOpenInEditMode] = useState(false);
   const pageSize = 6;
 
   const filters = useMemo(() => {
@@ -132,20 +136,31 @@ export default function FeedbackPage() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-    getFeedback(filters, controller.signal)
-      .then((nextResult) => {
+    let hasLoaded = false;
+    return startAutoRefresh(async (signal) => {
+      let changingPage = false;
+      try {
+        const nextResult = await getFeedback(filters, signal);
+        if (signal.aborted) return;
+        // Analysis or deletion can remove the last row from the filtered last page.
+        const lastPage = Math.max(0, nextResult.totalPages - 1);
+        if (filters.page > lastPage) {
+          changingPage = true;
+          setLoading(true);
+          setPage(lastPage);
+          return;
+        }
         setResult(nextResult);
         setListError(null);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
+        hasLoaded = true;
+      } catch (error: unknown) {
+        if (signal.aborted) return;
+        if (!hasLoaded) setResult(null);
         setListError(errorMessage(error));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
+      } finally {
+        if (!signal.aborted && !changingPage) setLoading(false);
+      }
+    });
   }, [filters, reloadKey]);
 
   const filterCount = [source, status, category, sentiment, priority].filter((value) => value !== "all").length + (query.trim() ? 1 : 0);
@@ -205,6 +220,11 @@ export default function FeedbackPage() {
     }
   }
 
+  function openFeedback(id: string, editing = false) {
+    setOpenInEditMode(editing);
+    setSelectedFeedbackId(id);
+  }
+
   return (
     <div className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-8">
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -214,7 +234,7 @@ export default function FeedbackPage() {
           <p className="mt-2 text-sm text-muted-foreground">Tra cứu và phân loại ý kiến người dân từ các nguồn tiếp nhận.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <AddFeedbackDialog onSuccess={() => setIngestSuccess("Đã tiếp nhận phản hồi để xử lý.")} />
+          <AddFeedbackDialog onSuccess={() => handleFeedbackChanged("Đã tiếp nhận phản hồi để xử lý.")} />
           <Button disabled={exporting} onClick={downloadExport} className="rounded-xl bg-[#0f766e] text-white hover:bg-[#0c5f59] dark:bg-teal-600 dark:hover:bg-teal-500"><Download /> {exporting ? "Đang xuất..." : "Xuất dữ liệu"}</Button>
         </div>
       </section>
@@ -239,19 +259,20 @@ export default function FeedbackPage() {
 
       <section className="overflow-hidden rounded-[24px] border border-border/80 bg-card shadow-sm">
         <div className="flex flex-col gap-2 border-b px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><h2 className="font-semibold">Danh sách phản hồi</h2><p className="mt-1 text-sm text-muted-foreground">Tìm thấy <span className="font-medium text-foreground">{totalElements}</span> phản hồi phù hợp</p></div><div className="flex items-center gap-2 text-xs text-muted-foreground"><SlidersHorizontal className="size-3.5" /> Sắp xếp: Mới nhất</div></div>
-        {listError ? <div className="flex min-h-60 flex-col items-center justify-center gap-3 px-6 text-center"><p role="alert" className="text-sm text-destructive">{listError}</p><Button variant="outline" size="sm" className="rounded-lg" onClick={() => { setLoading(true); setReloadKey((current) => current + 1); }}>Thử lại</Button></div> : <Table>
+        {listError && result && <p role="alert" className="px-5 py-3 text-sm text-destructive">Chưa cập nhật được dữ liệu mới. Trang sẽ tự thử lại sau 5 giây.</p>}
+        {listError && !result ? <div className="flex min-h-60 flex-col items-center justify-center gap-3 px-6 text-center"><p role="alert" className="text-sm text-destructive">{listError}</p><Button variant="outline" size="sm" className="rounded-lg" onClick={() => { setLoading(true); setReloadKey((current) => current + 1); }}>Thử lại</Button></div> : <Table>
           <TableHeader className="bg-slate-50/80 dark:bg-muted/50">
-            <TableRow className="hover:bg-slate-50/80 dark:hover:bg-muted/50"><TableHead className="pl-6">Nguồn / Mã</TableHead><TableHead>Nội dung phản hồi</TableHead><TableHead>Phân loại AI</TableHead><TableHead>Ưu tiên</TableHead><TableHead className="pr-6">Trạng thái</TableHead></TableRow>
+            <TableRow className="hover:bg-slate-50/80 dark:hover:bg-muted/50"><TableHead className="pl-6">Nguồn / Mã</TableHead><TableHead>Nội dung phản hồi</TableHead><TableHead>Người gửi</TableHead><TableHead>Địa điểm</TableHead><TableHead>Phân loại AI</TableHead><TableHead>Ưu tiên</TableHead><TableHead>Trạng thái</TableHead><TableHead className="pr-6 text-right">Thao tác</TableHead></TableRow>
           </TableHeader>
           <TableBody>
-            {loading && <TableRow><TableCell colSpan={5} className="h-60 text-center text-sm text-muted-foreground">Đang tải phản hồi...</TableCell></TableRow>}
-            {!loading && result?.content.map((feedback) => <FeedbackTableRow key={feedback.id} feedback={feedback} onOpen={() => setSelectedFeedbackId(feedback.id)} />)}
-            {!loading && result?.content.length === 0 && <TableRow><TableCell colSpan={5} className="h-60 text-center"><div className="flex flex-col items-center gap-3 text-muted-foreground"><span className="rounded-full bg-slate-100 p-3"><Search className="size-5" /></span><div><p className="font-medium text-foreground">Không tìm thấy phản hồi phù hợp</p><p className="mt-1 text-sm">Hãy thử điều chỉnh hoặc xóa bớt bộ lọc.</p></div><Button variant="outline" size="sm" className="rounded-lg" onClick={resetFilters}>Xóa bộ lọc</Button></div></TableCell></TableRow>}
+            {loading && <TableRow><TableCell colSpan={8} className="h-60 text-center text-sm text-muted-foreground">Đang tải phản hồi...</TableCell></TableRow>}
+            {!loading && result?.content.map((feedback) => <FeedbackTableRow key={feedback.id} feedback={feedback} onOpen={() => openFeedback(feedback.id)} onEdit={() => openFeedback(feedback.id, true)} />)}
+            {!loading && result?.content.length === 0 && <TableRow><TableCell colSpan={8} className="h-60 text-center"><div className="flex flex-col items-center gap-3 text-muted-foreground"><span className="rounded-full bg-slate-100 p-3"><Search className="size-5" /></span><div><p className="font-medium text-foreground">Không tìm thấy phản hồi phù hợp</p><p className="mt-1 text-sm">Hãy thử điều chỉnh hoặc xóa bớt bộ lọc.</p></div><Button variant="outline" size="sm" className="rounded-lg" onClick={resetFilters}>Xóa bộ lọc</Button></div></TableCell></TableRow>}
           </TableBody>
         </Table>}
-        <div className="flex flex-col gap-3 border-t px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><p className="text-sm text-muted-foreground">Hiển thị {firstRow}–{lastRow} trong tổng số {totalElements}</p><div className="flex items-center gap-2"><Button variant="outline" size="sm" className="rounded-lg" disabled={loading || result?.first !== false} onClick={() => setPage((current) => current - 1)}><ChevronLeft /> Trước</Button><span className="px-2 text-sm text-muted-foreground">{currentPage} / {Math.max(totalPages, 1)}</span><Button variant="outline" size="sm" className="rounded-lg" disabled={loading || result?.last !== false} onClick={() => setPage((current) => current + 1)}>Sau <ChevronRight /></Button></div></div>
+        <div className="flex flex-col gap-3 border-t px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><p className="text-sm text-muted-foreground">Hiển thị {firstRow}–{lastRow} trong tổng số {totalElements}</p><div className="flex items-center gap-2"><Button variant="outline" size="sm" className="rounded-lg" disabled={loading || result?.first !== false} onClick={() => { setLoading(true); setPage((current) => current - 1); }}><ChevronLeft /> Trước</Button><span className="px-2 text-sm text-muted-foreground">{currentPage} / {Math.max(totalPages, 1)}</span><Button variant="outline" size="sm" className="rounded-lg" disabled={loading || result?.last !== false} onClick={() => { setLoading(true); setPage((current) => current + 1); }}>Sau <ChevronRight /></Button></div></div>
       </section>
-      {selectedFeedbackId && <FeedbackDetailDialog key={selectedFeedbackId} feedbackId={selectedFeedbackId} categories={categories} onOpenChange={(open) => { if (!open) setSelectedFeedbackId(null); }} onChanged={handleFeedbackChanged} />}
+      {selectedFeedbackId && <FeedbackDetailDialog key={`${selectedFeedbackId}-${openInEditMode}`} feedbackId={selectedFeedbackId} categories={categories} initialEditing={openInEditMode} onOpenChange={(open) => { if (!open) { setSelectedFeedbackId(null); setOpenInEditMode(false); } }} onChanged={handleFeedbackChanged} />}
     </div>
   );
 }
@@ -260,18 +281,19 @@ function FilterSelect({ value, onValueChange, placeholder, children }: { value: 
   return <Select value={value} onValueChange={onValueChange}><SelectTrigger className="w-full rounded-xl bg-slate-50 dark:bg-muted/60 lg:col-span-2"><SelectValue placeholder={placeholder} /></SelectTrigger><SelectContent>{children}</SelectContent></Select>;
 }
 
-function FeedbackTableRow({ feedback, onOpen }: { feedback: FeedbackListItem; onOpen: () => void }) {
+function FeedbackTableRow({ feedback, onOpen, onEdit }: { feedback: FeedbackListItem; onOpen: () => void; onEdit: () => void }) {
   const source = sourceStyles[feedback.source];
   const SourceIcon = source.icon;
   const sentimentClass = feedback.sentiment === "POSITIVE" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" : feedback.sentiment === "NEGATIVE" ? "bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300" : "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300";
   const priorityClass = feedback.priority === "URGENT" || feedback.priority === "HIGH" ? "bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300" : feedback.priority === "MEDIUM" ? "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" : "bg-slate-100 text-slate-600 dark:bg-muted dark:text-slate-300";
   const statusClass = feedback.status === "PENDING_ANALYSIS" || feedback.status === "ANALYZED" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300" : feedback.status === "IN_PROGRESS" ? "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" : feedback.status === "RESOLVED" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-slate-100 text-slate-700 dark:bg-muted dark:text-slate-300";
-  return <TableRow className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} aria-label={`Xem chi tiết phản hồi ${feedback.id}`} onClick={onOpen} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpen(); } }}><TableCell className="pl-6 align-top"><div className={cn("mb-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium", source.className)}><SourceIcon className="size-3" />{sourceLabels[feedback.source]}</div><p title={feedback.id} className="max-w-32 truncate text-xs font-medium text-slate-700 dark:text-slate-200">{feedback.id}</p><p className="mt-1 text-xs text-muted-foreground">{formatDateTime(feedback.receivedAt)}</p></TableCell><TableCell className="min-w-80 max-w-lg align-top whitespace-normal"><p className="font-medium text-slate-800 dark:text-slate-100">{feedback.authorName ?? "Không rõ người gửi"}</p><p className="mt-1.5 line-clamp-2 text-sm leading-5 text-muted-foreground">{feedback.content}</p></TableCell><TableCell className="min-w-40 align-top"><p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">{feedback.category ?? "Chưa phân loại"}</p>{feedback.sentiment ? <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", sentimentClass)}>{sentimentLabels[feedback.sentiment]}</span> : <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-muted dark:text-slate-300">Chưa phân tích</span>}</TableCell><TableCell className="align-top">{feedback.priority ? <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", priorityClass)}>{(feedback.priority === "URGENT" || feedback.priority === "HIGH") && <CircleAlert className="size-3" />}{priorityLabels[feedback.priority]}</span> : <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-muted dark:text-slate-300">Chưa phân tích</span>}</TableCell><TableCell className="pr-6 align-top"><span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", statusClass)}>{statusLabels[feedback.status]}</span></TableCell></TableRow>;
+  return <TableRow className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} aria-label={`Xem chi tiết phản hồi ${feedback.id}`} onClick={onOpen} onKeyDown={(event) => { if (event.target instanceof HTMLElement && event.target.closest("button")) return; if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpen(); } }}><TableCell className="pl-6 align-top"><div className={cn("mb-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium", source.className)}><SourceIcon className="size-3" />{sourceLabels[feedback.source]}</div><p title={feedback.id} className="max-w-32 truncate text-xs font-medium text-slate-700 dark:text-slate-200">{feedback.id}</p><p className="mt-1 text-xs text-muted-foreground">{formatDateTime(feedback.receivedAt)}</p></TableCell><TableCell className="min-w-72 max-w-lg align-top whitespace-normal"><p className="font-medium text-slate-800 dark:text-slate-100">{feedback.title || "Không có tiêu đề"}</p><p className="mt-1.5 line-clamp-2 text-sm leading-5 text-muted-foreground">{feedback.content}</p></TableCell><TableCell className="min-w-36 align-top text-sm text-slate-700 dark:text-slate-200">{feedback.authorName ?? "Không rõ người gửi"}</TableCell><TableCell className="min-w-36 align-top text-sm text-muted-foreground">{feedback.location ?? "Chưa có"}</TableCell><TableCell className="min-w-40 align-top"><p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">{feedback.category ?? "Chưa phân loại"}</p>{feedback.sentiment ? <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", sentimentClass)}>{sentimentLabels[feedback.sentiment]}</span> : <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-muted dark:text-slate-300">Chưa phân tích</span>}</TableCell><TableCell className="align-top">{feedback.priority ? <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", priorityClass)}>{(feedback.priority === "URGENT" || feedback.priority === "HIGH") && <CircleAlert className="size-3" />}{priorityLabels[feedback.priority]}</span> : <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-muted dark:text-slate-300">Chưa phân tích</span>}</TableCell><TableCell className="align-top"><span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", statusClass)}>{statusLabels[feedback.status]}</span></TableCell><TableCell className="pr-6 text-right align-top"><div className="flex justify-end gap-1"><Button type="button" variant="ghost" size="icon" className="size-8" aria-label={`Xem phản hồi ${feedback.id}`} title="Xem chi tiết" onClick={(event) => { event.stopPropagation(); onOpen(); }}><Eye className="size-4" /></Button><Button type="button" variant="ghost" size="icon" className="size-8" aria-label={`Chỉnh sửa phản hồi ${feedback.id}`} title="Chỉnh sửa" onClick={(event) => { event.stopPropagation(); onEdit(); }}><Pencil className="size-4" /></Button></div></TableCell></TableRow>;
 }
 
 function AddFeedbackDialog({ onSuccess }: { onSuccess: () => void }) {
   const [open, setOpen] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [source, setSource] = useState<SourceType>("MANUAL");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -280,6 +302,7 @@ function AddFeedbackDialog({ onSuccess }: { onSuccess: () => void }) {
     setOpen(nextOpen);
     if (!nextOpen) {
       setAttachments([]);
+      setSource("MANUAL");
       setSubmitError(null);
     }
   }
@@ -303,6 +326,7 @@ function AddFeedbackDialog({ onSuccess }: { onSuccess: () => void }) {
     setSubmitting(true);
     try {
       const feedback = await createFeedback({
+        source,
         title: optionalText("rawTitle"),
         content: rawContent,
         authorName: optionalText("rawAuthorName"),
@@ -349,6 +373,13 @@ function AddFeedbackDialog({ onSuccess }: { onSuccess: () => void }) {
             <Textarea id="feedback-content" name="rawContent" required rows={5} className="resize-none" placeholder="Nhập nội dung phản hồi..." />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="feedback-source">Nguồn phản hồi</Label>
+              <Select value={source} onValueChange={(value) => setSource(value as SourceType)} disabled={submitting}>
+                <SelectTrigger id="feedback-source"><SelectValue placeholder="Chọn nguồn" /></SelectTrigger>
+                <SelectContent>{(Object.entries(sourceLabels) as [SourceType, string][]).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="feedback-title">Tiêu đề</Label>
               <Input id="feedback-title" name="rawTitle" maxLength={500} placeholder="Tóm tắt phản hồi" />

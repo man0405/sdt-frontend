@@ -1,25 +1,13 @@
 "use client";
 
+import {
+  User
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  User,
-  Building2,
-  Bell,
-  Shield,
-  Plug,
-  KeyRound,
-  Palette,
-} from "lucide-react";
 
 const navItems = [
-  { href: "/settings/general", label: "General", icon: User },
-  { href: "/settings/workspace", label: "Workspace", icon: Building2 },
-  { href: "/settings/notifications", label: "Notifications", icon: Bell },
-  { href: "/settings/security", label: "Security", icon: Shield },
-  { href: "/settings/integrations", label: "Integrations", icon: Plug },
-  { href: "/settings/api-keys", label: "API Keys", icon: KeyRound },
-  { href: "/settings/branding", label: "Branding", icon: Palette },
+  { href: "/settings/general", label: "Chung", icon: User },
 ];
 
 export function SettingsNav() {

@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { startAutoRefresh } from "@/lib/auto-refresh";
 import {
   ApiError,
   type FeedbackDetail,
@@ -81,17 +82,19 @@ function errorMessage(error: unknown, fallback: string) {
 export function FeedbackDetailDialog({
   feedbackId,
   categories,
+  initialEditing = false,
   onOpenChange,
   onChanged,
 }: {
   feedbackId: string;
   categories: string[];
+  initialEditing?: boolean;
   onOpenChange: (open: boolean) => void;
   onChanged: (message: string) => void;
 }) {
   const [feedback, setFeedback] = useState<FeedbackDetail | null>(null);
   const [form, setForm] = useState<EditableFeedback>(emptyForm);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initialEditing);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -99,6 +102,8 @@ export function FeedbackDetailDialog({
   const [uploading, setUploading] = useState(false);
   const [viewingAttachmentId, setViewingAttachmentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refreshError, setRefreshError] = useState(false);
+  const canAutoRefresh = Boolean(feedback) && !loading && !editing && !saving && !deleting && !uploading;
 
   const categoryOptions = useMemo(() => {
     if (!form.category || categories.includes(form.category)) return categories;
@@ -129,6 +134,21 @@ export function FeedbackDetailDialog({
 
     return () => controller.abort();
   }, [feedbackId]);
+
+  useEffect(() => {
+    if (!canAutoRefresh) return;
+    return startAutoRefresh(async (signal) => {
+      try {
+        const updated = await getFeedbackDetail(feedbackId, signal);
+        if (signal.aborted) return;
+        setFeedback(updated);
+        setForm(toForm(updated));
+        setRefreshError(false);
+      } catch {
+        if (!signal.aborted) setRefreshError(true);
+      }
+    }, { immediate: false });
+  }, [feedbackId, canAutoRefresh]);
 
   function updateField<K extends keyof EditableFeedback>(field: K, value: EditableFeedback[K]) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -230,7 +250,7 @@ export function FeedbackDetailDialog({
       const image = await downloadFeedbackAttachment(feedback.id, attachment.id);
       const url = URL.createObjectURL(image);
       const preview = window.open(url, "_blank", "noopener,noreferrer");
-      if (!preview) throw new Error("Popup blocked");
+      if (!preview) throw new Error("Cửa sổ bật lên bị chặn");
       preview.addEventListener("load", () => URL.revokeObjectURL(url), { once: true });
     } catch (requestError) {
       setError(errorMessage(requestError, "Không thể mở ảnh."));
@@ -347,6 +367,7 @@ export function FeedbackDetailDialog({
             </div>
 
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+            {refreshError && <p role="alert" className="text-sm text-destructive">Chưa cập nhật được chi tiết mới. Trang sẽ tự thử lại sau 5 giây.</p>}
           </div>
         )}
 

@@ -1,9 +1,10 @@
 "use client";
 
+import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 import AppLogo from "@/components/layout/app-logo";
 import { NavMain } from "./nav-main";
-import { NavUser } from "./nav-user";
-import { SearchTrigger } from "./search-trigger";
 import { SidebarToggle } from "./SidebarToggle";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,17 +13,20 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-
-const data = {
-  user: {
-    name: "Alex Martin",
-    email: "alex@example.com",
-    avatar: "https://untitledui.com/images/avatars/belle-woods",
-  },
-};
+import { clearSession } from "@/lib/feedback-api";
 
 export default function AppSidebar() {
+  const router = useRouter();
+
+  function logout() {
+    clearSession();
+    router.replace("/sign-in");
+  }
+
   return (
     <Sidebar
       collapsible="icon"
@@ -34,7 +38,6 @@ export default function AppSidebar() {
           <AppLogo />
 
           <div className="flex items-center gap-1">
-             <SearchTrigger />
             <SidebarToggle />
           </div>
         </div>
@@ -55,7 +58,18 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t p-0 bg-background dark:bg-muted">
-        <NavUser user={data.user} />
+        <SidebarMenu className="p-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Đăng xuất"
+              className="h-10 text-destructive hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:justify-center"
+              onClick={logout}
+            >
+              <LogOut />
+              <span className="group-data-[collapsible=icon]:hidden">Đăng xuất</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

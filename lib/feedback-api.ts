@@ -58,6 +58,37 @@ export type PageResponse<T> = {
   last: boolean;
 };
 
+export type NotificationType =
+  | "NEW_FEEDBACK"
+  | "FEEDBACK_STATUS_CHANGED"
+  | "ANALYSIS_COMPLETED"
+  | "HIGH_PRIORITY"
+  | "URGENT_PRIORITY";
+
+export type Notification = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  relatedFeedbackId: string | null;
+  isRead: boolean;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type UnreadNotificationCount = {
+  unreadCount: number;
+};
+
+export type MarkAllNotificationsReadResponse = {
+  updatedCount: number;
+};
+
+export type NotificationFilters = {
+  page?: number;
+  size?: number;
+};
+
 export type FeedbackListItem = {
   id: string;
   title: string | null;
@@ -140,6 +171,7 @@ export type FeedbackUpdateRequest = {
 };
 
 export type FeedbackCreateRequest = {
+  source: SourceType;
   title?: string;
   content: string;
   authorName?: string;
@@ -319,7 +351,7 @@ async function throwRequestError(error: unknown, fallback: string): Promise<neve
     axios.isCancel(error) ||
     (axios.isAxiosError(error) && error.code === "ERR_CANCELED")
   ) {
-    throw new DOMException("The operation was aborted.", "AbortError");
+    throw new DOMException("Thao tác đã bị hủy.", "AbortError");
   }
 
   if (!axios.isAxiosError(error) || !error.response) {
@@ -347,7 +379,7 @@ async function request<T>(
 
     return response.data;
   } catch (error) {
-    return throwRequestError(error, "Request failed");
+    return throwRequestError(error, "Yêu cầu thất bại");
   }
 }
 
@@ -358,12 +390,49 @@ export async function login(username: string, password: string) {
     });
     return response.data;
   } catch (error) {
-    return throwRequestError(error, "Sign in failed");
+    return throwRequestError(error, "Đăng nhập thất bại");
   }
 }
 
 export function getCurrentUser(signal?: AbortSignal) {
   return request<AuthenticatedUser>("/api/auth/me", undefined, signal);
+}
+
+export function getNotifications(
+  filters: NotificationFilters = {},
+  signal?: AbortSignal,
+) {
+  return request<PageResponse<Notification>>("/api/notifications", filters, signal);
+}
+
+export function getUnreadNotificationCount(signal?: AbortSignal) {
+  return request<UnreadNotificationCount>("/api/notifications/unread-count", undefined, signal);
+}
+
+export async function markNotificationAsRead(id: string) {
+  try {
+    const response = await axios.patch<Notification>(
+      apiUrl(`/api/notifications/${encodeURIComponent(id)}/read`),
+      undefined,
+      { headers: { Accept: "application/json", ...authorizationHeader() } },
+    );
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Không thể đánh dấu thông báo đã đọc");
+  }
+}
+
+export async function markAllNotificationsAsRead() {
+  try {
+    const response = await axios.patch<MarkAllNotificationsReadResponse>(
+      apiUrl("/api/notifications/read-all"),
+      undefined,
+      { headers: { Accept: "application/json", ...authorizationHeader() } },
+    );
+    return response.data;
+  } catch (error) {
+    return throwRequestError(error, "Không thể đánh dấu tất cả thông báo đã đọc");
+  }
 }
 
 export function getFeedback(filters: FeedbackFilters, signal?: AbortSignal) {
@@ -381,7 +450,7 @@ export async function createFeedback(payload: FeedbackCreateRequest) {
     });
     return response.data;
   } catch (error) {
-    return throwRequestError(error, "Feedback submission failed");
+    return throwRequestError(error, "Gửi phản hồi thất bại");
   }
 }
 
@@ -394,7 +463,7 @@ export async function updateFeedback(id: string, payload: FeedbackUpdateRequest)
     );
     return response.data;
   } catch (error) {
-    return throwRequestError(error, "Feedback update failed");
+    return throwRequestError(error, "Cập nhật phản hồi thất bại");
   }
 }
 
@@ -404,7 +473,7 @@ export async function deleteFeedback(id: string) {
       headers: { Accept: "application/json", ...authorizationHeader() },
     });
   } catch (error) {
-    return throwRequestError(error, "Feedback deletion failed");
+    return throwRequestError(error, "Xóa phản hồi thất bại");
   }
 }
 
@@ -415,7 +484,7 @@ export async function ingestFeedback(payload: FeedbackIngestRequest) {
     });
     return response.data;
   } catch (error) {
-    return throwRequestError(error, "Feedback submission failed");
+    return throwRequestError(error, "Gửi phản hồi thất bại");
   }
 }
 
@@ -439,7 +508,7 @@ export async function uploadFeedbackAttachment(feedbackId: string, file: File) {
     );
     return response.data;
   } catch (error) {
-    return throwRequestError(error, "Image upload failed");
+    return throwRequestError(error, "Tải ảnh lên thất bại");
   }
 }
 
@@ -451,7 +520,7 @@ export async function downloadFeedbackAttachment(feedbackId: string, attachmentI
     );
     return response.data;
   } catch (error) {
-    return throwRequestError(error, "Image download failed");
+    return throwRequestError(error, "Tải ảnh xuống thất bại");
   }
 }
 
@@ -462,7 +531,7 @@ export async function deleteFeedbackAttachment(feedbackId: string, attachmentId:
       { headers: { Accept: "application/json", ...authorizationHeader() } }
     );
   } catch (error) {
-    return throwRequestError(error, "Image deletion failed");
+    return throwRequestError(error, "Xóa ảnh thất bại");
   }
 }
 
@@ -501,17 +570,17 @@ export async function exportFeedback(filters: FeedbackFilters) {
     const filename =
       (typeof contentDisposition === "string"
         ? contentDisposition.match(/filename="?([^";]+)"?/)?.[1]
-        : undefined) ?? "feedback-export.csv";
+        : undefined) ?? "xuat-phan-hoi.csv";
 
     return { blob: response.data, filename };
   } catch (error) {
-    return throwRequestError(error, "Export failed");
+    return throwRequestError(error, "Xuất dữ liệu thất bại");
   }
 }
 
 export const sourceLabels: Record<SourceType, string> = {
   ZALO: "Zalo",
-  WEBSITE: "Website",
+  WEBSITE: "Trang web",
   EMAIL: "Email",
   MANUAL: "Nhập thủ công",
   OTHER: "Khác",

@@ -7,8 +7,6 @@ import { AuthCard } from "@/components/auth/shared/auth-card";
 import { AuthFooter } from "@/components/auth/shared/auth-footer";
 import { AuthHeader } from "@/components/auth/shared/auth-header";
 import { AuthLogo } from "@/components/auth/shared/auth-logo";
-import { AuthDivider } from "@/components/auth/sign-in/auth-divider";
-import { SocialLogin } from "@/components/auth/sign-in/social-login";
 import {
   SignUpForm,
   SignUpValues,
@@ -16,15 +14,11 @@ import {
 
 export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<
-    "google" | "github" | null
-  >(null);
-
   async function handleSignUp(values: SignUpValues) {
     try {
       setLoading(true);
 
-      console.log("Sign Up", values);
+      console.log("Đăng ký", values);
 
       // TODO:
       // Clerk
@@ -38,21 +32,6 @@ export default function SignUpPage() {
     }
   }
 
-  async function handleSocialLogin(provider: "google" | "github") {
-    try {
-      setSocialLoading(provider);
-
-      console.log(provider);
-
-      // TODO:
-      // OAuth Login
-
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-    } finally {
-      setSocialLoading(null);
-    }
-  }
-
   return (
     <AuthLayout>
       <div className="space-y-8">
@@ -61,16 +40,9 @@ export default function SignUpPage() {
         <AuthCard className="p-8">
           <div className="space-y-6">
             <AuthHeader
-              title="Create your account"
-              description="Start building your AI SaaS in minutes."
+              title="Đăng ký tài khoản"
+              description="Tạo tài khoản để tiếp nhận và theo dõi phản hồi về dịch vụ công."
             />
-
-            <SocialLogin
-              loading={socialLoading}
-              onProviderClick={handleSocialLogin}
-            />
-
-            <AuthDivider />
 
             <SignUpForm
               isLoading={loading}
@@ -78,8 +50,8 @@ export default function SignUpPage() {
             />
 
             <AuthFooter
-              text="Already have an account?"
-              linkLabel="Sign in"
+              text="Bạn đã có tài khoản?"
+              linkLabel="Đăng nhập"
               href="/sign-in"
             />
           </div>

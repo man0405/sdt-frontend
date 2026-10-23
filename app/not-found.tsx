@@ -28,12 +28,11 @@ export default function NotFound() {
         </span>
 
         <h1 className="mt-3 text-3xl font-bold tracking-tight">
-          Page Not Found
+          Không tìm thấy trang
         </h1>
 
         <p className="mt-4 max-w-md text-muted-foreground">
-          Sorry, the page you're looking for doesn't exist, has been moved,
-          or the URL is incorrect.
+          Trang bạn tìm không tồn tại, đã được chuyển đi hoặc URL không chính xác.
         </p>
 
         {/* Buttons */}
@@ -41,7 +40,7 @@ export default function NotFound() {
           <Button asChild>
             <Link href="/dashboard">
               <Home className="mr-2 h-4 w-4" />
-              Back to Home
+              Quay về trang chủ
             </Link>
           </Button>
 
@@ -50,7 +49,7 @@ export default function NotFound() {
 
         {/* Footer */}
         <p className="mt-12 text-xs text-muted-foreground">
-          AI SaaS Starter Kit • Error 404
+          Bộ khởi tạo ứng dụng AI SaaS • Lỗi 404
         </p>
       </div>
     </div>

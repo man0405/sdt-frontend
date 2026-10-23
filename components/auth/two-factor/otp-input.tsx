@@ -30,6 +30,7 @@ export function OTPInput({
           value={value}
           onChange={onChange}
           disabled={isLoading}
+          aria-label="Mã xác thực gồm 6 chữ số"
         >
           <InputOTPGroup>
             <InputOTPSlot index={0} />
@@ -52,7 +53,7 @@ export function OTPInput({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         )}
 
-        Verify Code
+        Xác minh mã
       </Button>
     </div>
   );

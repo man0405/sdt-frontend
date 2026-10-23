@@ -30,7 +30,7 @@ export default function TwoFactorPage() {
     try {
       setLoading(true);
 
-      console.log("Verify OTP:", otp);
+      console.log("Xác minh mã OTP:", otp);
 
       // TODO:
       // Clerk
@@ -40,7 +40,7 @@ export default function TwoFactorPage() {
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log("OTP Verified");
+      console.log("Đã xác minh mã OTP");
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function TwoFactorPage() {
     try {
       setLoading(true);
 
-      console.log("Resend OTP");
+      console.log("Gửi lại mã OTP");
 
       // TODO:
       // Resend verification code
@@ -72,8 +72,8 @@ export default function TwoFactorPage() {
         <AuthCard className="p-8">
           <div className="space-y-8">
             <AuthHeader
-              title="Two-Factor Authentication"
-              description="Enter the 6-digit verification code from your authenticator app."
+              title="Xác thực hai bước"
+              description="Nhập mã gồm 6 chữ số từ ứng dụng xác thực để tiếp tục."
             />
 
             <OTPInput
@@ -91,8 +91,8 @@ export default function TwoFactorPage() {
                 className="text-sm font-medium text-primary hover:underline disabled:pointer-events-none disabled:opacity-50"
               >
                 {countdown > 0
-                  ? `Resend code in ${countdown}s`
-                  : "Resend verification code"}
+                  ? `Gửi lại mã sau ${countdown} giây`
+                  : "Gửi lại mã xác minh"}
               </button>
 
               <div>
@@ -100,7 +100,7 @@ export default function TwoFactorPage() {
                   href="/recovery-code"
                   className="text-sm text-muted-foreground hover:text-primary hover:underline"
                 >
-                  Use a recovery code instead
+                  Sử dụng mã khôi phục
                 </Link>
               </div>
 
@@ -109,7 +109,7 @@ export default function TwoFactorPage() {
                   href="/sign-in"
                   className="text-sm text-muted-foreground hover:text-primary hover:underline"
                 >
-                  Back to Sign In
+                  Quay lại đăng nhập
                 </Link>
               </div>
             </div>

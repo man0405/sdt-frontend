@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 const forgotPasswordSchema = z.object({
   email: z
     .string()
-    .email("Please enter a valid email address."),
+    .email("Vui lòng nhập địa chỉ email hợp lệ."),
 });
 
 export type ForgotPasswordValues = z.infer<
@@ -52,7 +52,7 @@ export function ForgotPasswordForm({
     >
       <div className="space-y-2">
         <Label htmlFor="email">
-          Email Address
+          Địa chỉ email
         </Label>
 
         <div className="relative">
@@ -62,7 +62,7 @@ export function ForgotPasswordForm({
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="name@example.com"
+            placeholder="an@example.com"
             className="pl-10"
             disabled={isLoading}
             {...register("email")}
@@ -86,7 +86,7 @@ export function ForgotPasswordForm({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         )}
 
-        Send Reset Link
+        Gửi liên kết đặt lại
       </Button>
     </form>
   );

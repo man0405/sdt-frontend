@@ -11,7 +11,7 @@ export function BackButton() {
   return (
     <Button variant="outline" onClick={() => router.back()}>
       <ArrowLeft className="mr-2 h-4 w-4" />
-      Go Back
+      Quay lại
     </Button>
   );
 }

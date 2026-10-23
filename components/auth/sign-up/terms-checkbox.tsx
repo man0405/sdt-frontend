@@ -31,19 +31,20 @@ export function TermsCheckbox({
         htmlFor="terms"
         className="cursor-pointer text-sm leading-6 font-normal text-muted-foreground"
       >
-        I agree to the{" "}
+        Tôi đồng ý với{" "}
         <Link
           href="/terms"
           className="font-medium text-primary hover:underline"
         >
-          Terms of Service
+          Điều khoản dịch vụ
         </Link>{" "}
-        and{" "}
+
+        và{" "}
         <Link
           href="/privacy"
           className="font-medium text-primary hover:underline"
         >
-          Privacy Policy
+          Chính sách quyền riêng tư
         </Link>
         .
       </Label>

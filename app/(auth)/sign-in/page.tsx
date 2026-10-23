@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { AuthCard } from "@/components/auth/shared/auth-card";
 import { AuthFooter } from "@/components/auth/shared/auth-footer";
+import { AuthHeader } from "@/components/auth/shared/auth-header";
 import { AuthLogo } from "@/components/auth/shared/auth-logo";
 import { SignInForm, SignInValues } from "@/components/auth/sign-in/sign-in-form";
 import { ApiError, login, saveSession } from "@/lib/feedback-api";
@@ -23,7 +24,7 @@ export default function SignInPage() {
       saveSession(session, values.remember);
       router.replace("/dashboard");
     } catch (requestError) {
-      setError(requestError instanceof ApiError ? requestError.message : "Unable to sign in. Please try again.");
+      setError(requestError instanceof ApiError ? requestError.message : "Không thể đăng nhập. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -36,7 +37,10 @@ export default function SignInPage() {
 
         <AuthCard className="p-8">
           <div className="space-y-6">
-
+            <AuthHeader
+              title="Đăng nhập hệ thống"
+              description="Theo dõi và xử lý phản hồi về dịch vụ công tại một nơi."
+            />
 
             <SignInForm
               isLoading={loading}
@@ -46,8 +50,8 @@ export default function SignInPage() {
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
             <AuthFooter
-              text="Don't have an account?"
-              linkLabel="Sign up"
+              text="Bạn chưa có tài khoản?"
+              linkLabel="Đăng ký"
               href="/sign-up"
             />
           </div>

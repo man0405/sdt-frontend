@@ -25,20 +25,20 @@ export function PasswordStrength({
 
   const strength =
     score === 100
-      ? "Very Strong"
+      ? "Rất mạnh"
       : score >= 80
-      ? "Strong"
+      ? "Mạnh"
       : score >= 60
-      ? "Good"
+      ? "Tốt"
       : score >= 40
-      ? "Weak"
-      : "Very Weak";
+      ? "Yếu"
+      : "Rất yếu";
 
   return (
     <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span>Password Strength</span>
+          <span>Độ mạnh mật khẩu</span>
 
           <span className="font-medium">
             {strength}
@@ -51,27 +51,27 @@ export function PasswordStrength({
       <div className="space-y-2 text-sm">
         <Requirement
           passed={checks.length}
-          label="At least 8 characters"
+          label="Ít nhất 8 ký tự"
         />
 
         <Requirement
           passed={checks.uppercase}
-          label="One uppercase letter"
+          label="Một chữ hoa"
         />
 
         <Requirement
           passed={checks.lowercase}
-          label="One lowercase letter"
+          label="Một chữ thường"
         />
 
         <Requirement
           passed={checks.number}
-          label="One number"
+          label="Một chữ số"
         />
 
         <Requirement
           passed={checks.special}
-          label="One special character"
+          label="Một ký tự đặc biệt"
         />
       </div>
     </div>

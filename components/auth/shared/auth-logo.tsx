@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Brain } from "lucide-react";
 
+import { BrandMark } from "@/components/shared/brand-mark";
 import { cn } from "@/lib/utils";
 
 interface AuthLogoProps {
@@ -11,8 +11,8 @@ interface AuthLogoProps {
 }
 
 export function AuthLogo({
-  title = "Orbit",
-  subtitle = "AI SaaS Starter Kit",
+  title = "Phản hồi dịch vụ công",
+  subtitle = "Cổng tiếp nhận ý kiến người dân",
   href = "/",
   className,
 }: AuthLogoProps) {
@@ -22,9 +22,7 @@ export function AuthLogo({
         href={href}
         className="group flex items-center gap-3 transition-opacity hover:opacity-90"
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
-          <Brain className="h-6 w-6" />
-        </div>
+        <BrandMark className="transition-transform group-hover:scale-105" />
 
         <div className="text-left">
           <h1 className="text-xl font-bold tracking-tight">{title}</h1>

@@ -17,7 +17,7 @@ export function ThemeToggle() {
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <Button variant="outline" size="icon" aria-label="Toggle theme">
+      <Button variant="outline" size="icon" aria-label="Đổi giao diện">
         <div className="size-5" />
       </Button>
     );
@@ -29,7 +29,7 @@ export function ThemeToggle() {
     <Button
       variant="outline"
       size="icon"
-      aria-label="Toggle theme"
+      aria-label="Đổi giao diện"
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       {isDark ? (

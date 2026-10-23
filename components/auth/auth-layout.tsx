@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Sparkles, ShieldCheck, Zap } from "lucide-react";
+import { ClipboardCheck, MessageSquareText, ShieldCheck } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,19 +10,19 @@ interface AuthLayoutProps {
 
 const features = [
   {
-    icon: Sparkles,
-    title: "AI Powered",
-    description: "Build modern AI SaaS applications faster.",
+    icon: MessageSquareText,
+    title: "Tiếp nhận tập trung",
+    description: "Ghi nhận ý kiến của người dân về dịch vụ công tại một nơi.",
   },
   {
     icon: ShieldCheck,
-    title: "Secure",
-    description: "Authentication built with security in mind.",
+    title: "Bảo vệ tài khoản",
+    description: "Đăng nhập an toàn để quản lý thông tin phản hồi.",
   },
   {
-    icon: Zap,
-    title: "Production Ready",
-    description: "Scalable architecture using Next.js & shadcn/ui.",
+    icon: ClipboardCheck,
+    title: "Theo dõi xử lý",
+    description: "Hỗ trợ tổng hợp và theo dõi phản hồi cần được giải quyết.",
   },
 ];
 
@@ -44,18 +44,16 @@ export function AuthLayout({
         <div className="relative z-10 flex h-full flex-col justify-start gap-12 p-12">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-background/70 px-3 py-1 text-sm backdrop-blur">
-              <Sparkles className="h-4 w-4 text-primary" />
-              AI SaaS Starter Kit
+              <MessageSquareText className="h-4 w-4 text-primary" />
+              Hệ thống phản hồi dịch vụ công
             </div>
 
             <h1 className="mt-8 max-w-md text-5xl font-bold tracking-tight">
-              Build AI products faster.
+              Lắng nghe phản hồi, nâng cao chất lượng phục vụ.
             </h1>
 
             <p className="mt-6 max-w-lg text-lg text-muted-foreground">
-              A production-ready starter kit built with Next.js, React,
-              Tailwind CSS and shadcn/ui to help you launch modern AI
-              applications quickly.
+              Nền tảng hỗ trợ tiếp nhận, tổng hợp và theo dõi phản hồi của người dân về các dịch vụ công.
             </p>
           </div>
 
