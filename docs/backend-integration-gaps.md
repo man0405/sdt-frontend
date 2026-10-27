@@ -2,16 +2,13 @@
 
 Status: confirmed against the implemented backend API contract and the dashboard/feedback screens.
 
-## Deployment blocker: browser access to the API
+## Browser access to the API
 
-The frontend is a Next static export (`output: "export"`) served under `/orbit-ai`. It has no runtime server that can proxy API calls.
+The frontend uses Next.js standalone output. Its runtime server proxies `/api/:path*` to the backend through rewrites; Nginx is no longer required.
 
-The backend has no CORS configuration. Direct browser calls to another origin, including local frontend development, will fail until one of these is configured:
+Compose builds with `NEXT_PUBLIC_API_BASE_URL=""` and `API_PROXY_TARGET=http://backend:8080`, so browser requests stay on the frontend origin.
 
-- Backend CORS for the development and production frontend origins; or
-- A reverse proxy that serves the static site and forwards `/api` on the same origin.
-
-The frontend reads `NEXT_PUBLIC_API_BASE_URL`; static deployments must set it during the frontend build. The local fallback is `http://localhost:8080`.
+Outside Compose, `NEXT_PUBLIC_API_BASE_URL` defaults to `http://localhost:8080`. Direct browser calls to another origin require the frontend origin in the backend's `CORS_ALLOWED_ORIGINS`. Set `NEXT_PUBLIC_API_BASE_URL=""` to use the Next.js proxy locally; `API_PROXY_TARGET` defaults to `http://localhost:8080`. Both values are captured during the frontend build.
 
 ## Dashboard filters and comparisons are unavailable
 
